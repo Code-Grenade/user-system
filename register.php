@@ -2,6 +2,10 @@
     require_once 'config/database.php';
     require_once 'includes/session.php';
 
+    if(isset($_SESSION['logged'])) {
+        header('Location: index.php');
+    }
+
     if(isset($_POST['register'])) {
         $errors = [];
         $success = '';
@@ -72,47 +76,17 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="/mi0/">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="users.php">Users <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="/mi0/">Home <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
-            <?php
-                if(!isset($_SESSION['logged'])) {
-            ?>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="login.php">Login</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link" href="register.php">Register</a>
                 </li>
             </ul>
-            <?php
-                } else {
-            ?>
-
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="user.php"></a>
-                </li>
-
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">
-                        <?php echo $_SESSION['username']; ?>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="logout.php">Logout</a>
-                    </div>
-                </li>
-            </ul>
-            <?php 
-                }
-            ?>
             
         </div>
     </nav>
@@ -121,15 +95,51 @@
     <div class="container py-4">
         <div class="row">
             <div class="col-md-8 mx-auto">
-                <?php 
-                    if(isset($_SESSION['logged'])) {
-                ?>
+                <div class="card">
+                    <div class="card-header">
+                        Registration
+                    </div>
+                    <div class="card-body">
 
-                <div class="alert alert-success">
-                    You have logged in successfully
+                        <?php  if(!empty($errors)) { ?>
+                            <div class="alert alert-danger" role="alert">
+                                <?php foreach($errors as $error) {
+                                    echo $error . '<br />';
+                                } ?>
+                            </div>
+                        <?php } else if(isset($success)) { ?>
+                            <div class="alert alert-success" role="alert">
+                                <?php echo $success; ?>
+                            </div>
+                        <?php } ?>
+                        
+                        <form method="POST">
+                            
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" name="username" class="form-control" id="username" placeholder="Enter username" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email address</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+                                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+                            </div>
+                            
+                            <button type="submit" name="register" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
                 </div>
-
-                <?php } ?>
             </div>
         </div>
     </div>
@@ -147,4 +157,5 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
     </script>
 </body>
+
 </html>

@@ -2,48 +2,28 @@
     require_once 'config/database.php';
     require_once 'includes/session.php';
 
-    if(isset($_POST['register'])) {
+    // /mi0/profile.php?id=31
+    $result = null;
+
+    if(isset($_GET['id'])) {
+        
         $errors = [];
-        $success = '';
 
-        $username           = htmlentities($_POST['username'], ENT_QUOTES, 'UTF-8');
-        $password           = password_hash(htmlentities($_POST['password'], ENT_QUOTES, 'UTF-8'), PASSWORD_DEFAULT);
-        $confirmPassword    = htmlentities($_POST['confirmPassword'], ENT_QUOTES, 'UTF-8');
-        $email              = htmlentities($_POST['email'], ENT_QUOTES, 'UTF-8');
-
-        if(strlen($username) < 3 or strlen($username) > 16) {
-            $errors[] .= "The username is must be between 3 and 16 characters!";
-        }
-
-        // var_dump(htmlentities($_POST['password'], ENT_QUOTES, 'UTF-8'));
-        // var_dump($confirmPassword);
-        // var_dump(password_verify($confirmPassword, $password));
-        // var_dump(password_hash($confirmPassword, PASSWORD_ARGON2I));
-        // var_dump($password);
-        if((strlen($confirmPassword) < 6 or strlen($confirmPassword) > 32)) {
-            $errors[] .= "The password must be between 6 and 32 characters!";
-        } else if(!password_verify($confirmPassword, $password)) {
-            $errors[] .= 'The passwords do not match!';
-        }
-
-        $rowcheckquery = "SELECT * FROM `users` WHERE `email`='{$email}' OR `username` LIKE '{$username}'";
+        $id = intval(htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8'));
+        
+        $rowcheckquery = "SELECT * FROM `users` WHERE id = {$id};";
         $rowstmt = $handler->prepare($rowcheckquery);
         $rowstmt->execute();
-        $rowexists = $rowstmt->fetch(PDO::FETCH_OBJ);
         
-        if(!empty($rowexists)) {
-            $errors[] .= 'The e-mail or username is already taken!';
-        }
+        $result = $rowstmt->fetch(PDO::FETCH_OBJ);
+        $count = $rowstmt->rowCOunt();
 
-        if(empty($errors)) {
-            $success = 'You have registered successfully!';
-
-            $sql = "INSERT INTO `users` (`username`, `email`, `password`) VALUES ('{$username}', '{$email}', '{$password}');";
-            $stmt = $handler->prepare($sql);
-            $result = $stmt->execute();
+        if ($count == 0)
+        {
+            $errors .= "There is no such User";
         }
     }
-
+    
 ?>
 
 <!DOCTYPE html>
@@ -72,10 +52,10 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="/mi0/">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="/mi0/">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="users.php">Users <span class="sr-only">(current)</span></a>
+                    <a class="nav-link active" href="users.php">Users <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <?php
@@ -124,11 +104,26 @@
                 <?php 
                     if(isset($_SESSION['logged'])) {
                 ?>
+                            
+                    <div class="card mb-3" style="max-width: 540px;">
+                        <div class="row no-gutters">
+                            <div class="col-md-4">
+                            <img src="#" class="card-img" alt="#">
+                            </div>
+                            <div class="col-md-8">
+                            <div class="card-body">
+                                <h5 class="card-title"><?php echo $result->username; ?></h5>
+                                <p class="card-text"><?php echo $result->email; ?></p>
+                                
+                            </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="alert alert-success">
-                    You have logged in successfully
-                </div>
-
+                <?php } else { ?>
+                    <div class="alert alert-danger">
+                        You cannot view this page without logging in!
+                    </div>
                 <?php } ?>
             </div>
         </div>

@@ -2,48 +2,13 @@
     require_once 'config/database.php';
     require_once 'includes/session.php';
 
-    if(isset($_POST['register'])) {
-        $errors = [];
-        $success = '';
+    $errors = [];
 
-        $username           = htmlentities($_POST['username'], ENT_QUOTES, 'UTF-8');
-        $password           = password_hash(htmlentities($_POST['password'], ENT_QUOTES, 'UTF-8'), PASSWORD_DEFAULT);
-        $confirmPassword    = htmlentities($_POST['confirmPassword'], ENT_QUOTES, 'UTF-8');
-        $email              = htmlentities($_POST['email'], ENT_QUOTES, 'UTF-8');
-
-        if(strlen($username) < 3 or strlen($username) > 16) {
-            $errors[] .= "The username is must be between 3 and 16 characters!";
-        }
-
-        // var_dump(htmlentities($_POST['password'], ENT_QUOTES, 'UTF-8'));
-        // var_dump($confirmPassword);
-        // var_dump(password_verify($confirmPassword, $password));
-        // var_dump(password_hash($confirmPassword, PASSWORD_ARGON2I));
-        // var_dump($password);
-        if((strlen($confirmPassword) < 6 or strlen($confirmPassword) > 32)) {
-            $errors[] .= "The password must be between 6 and 32 characters!";
-        } else if(!password_verify($confirmPassword, $password)) {
-            $errors[] .= 'The passwords do not match!';
-        }
-
-        $rowcheckquery = "SELECT * FROM `users` WHERE `email`='{$email}' OR `username` LIKE '{$username}'";
-        $rowstmt = $handler->prepare($rowcheckquery);
-        $rowstmt->execute();
-        $rowexists = $rowstmt->fetch(PDO::FETCH_OBJ);
-        
-        if(!empty($rowexists)) {
-            $errors[] .= 'The e-mail or username is already taken!';
-        }
-
-        if(empty($errors)) {
-            $success = 'You have registered successfully!';
-
-            $sql = "INSERT INTO `users` (`username`, `email`, `password`) VALUES ('{$username}', '{$email}', '{$password}');";
-            $stmt = $handler->prepare($sql);
-            $result = $stmt->execute();
-        }
-    }
-
+    $rowcheckquery = "SELECT * FROM `users`;";
+    $rowstmt = $handler->prepare($rowcheckquery);
+    $rowstmt->execute();
+    $result = $rowstmt->fetchAll(PDO::FETCH_OBJ);
+    
 ?>
 
 <!DOCTYPE html>
@@ -72,10 +37,10 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="/mi0/">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="/mi0/">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="users.php">Users <span class="sr-only">(current)</span></a>
+                    <a class="nav-link active" href="users.php">Users <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <?php
@@ -124,11 +89,30 @@
                 <?php 
                     if(isset($_SESSION['logged'])) {
                 ?>
+                            
+                    <table class="table">
+                        <thead class="thead-dark">
+                            <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($result as $user) { ?>
+                                <tr>
+                                    <th scope="row"><?php echo $user->id; ?></th>
+                                    <td><a href="profile.php?id=<?php echo $user->id;?>"><?php echo $user->username; ?></td>
+                                    <td><?php echo $user->email; ?></td>
+                                </tr>
+                            <?php }?>
+                        </tbody>
+                    </table>
 
-                <div class="alert alert-success">
-                    You have logged in successfully
-                </div>
-
+                <?php } else { ?>
+                    <div class="alert alert-danger">
+                        You cannot view this page without logging in!
+                    </div>
                 <?php } ?>
             </div>
         </div>
